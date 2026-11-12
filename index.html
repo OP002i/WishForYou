@@ -1,14 +1,752 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ms">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Website</title>
+    <meta name="theme-color" content="#e9f1f5">
+    <meta name="description" content="Kad hari jadi interaktif dengan kenangan dan ucapan khas.">
+    <title>Our Memories — Selamat Hari Jadi!</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --accent: #287c85;
+            --deep-accent: #1d5e68;
+            --ink: #263b4b;
+            --muted: #718493;
+            --paper: #fbfdfe;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 1.5rem 1rem;
+            display: grid;
+            place-items: center;
+            overflow-x: hidden;
+            background:
+                radial-gradient(ellipse at 18% 20%, #f8fbfc 0, transparent 38%),
+                radial-gradient(ellipse at 82% 78%, #cbdde5 0, transparent 40%),
+                #e9f1f5;
+            color: var(--ink);
+            font-family: "Trebuchet MS", Arial, sans-serif;
+        }
+
+        .floaties {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .floaty {
+            position: absolute;
+            bottom: -3rem;
+            color: #86aeb8;
+            opacity: 0.55;
+            font-size: var(--size);
+            animation: float-up var(--duration) linear infinite;
+            animation-delay: var(--delay);
+        }
+
+        .card {
+            position: relative;
+            z-index: 1;
+            width: min(100%, 700px);
+            min-height: 620px;
+            padding: clamp(2rem, 7vw, 3.5rem) clamp(1.25rem, 6vw, 3rem) 2rem;
+            overflow: hidden;
+            text-align: center;
+            background: rgba(251, 253, 254, 0.95);
+            border: 1px solid rgba(40, 124, 133, 0.18);
+            border-radius: 30px;
+            box-shadow: 0 25px 80px rgba(37, 67, 84, 0.16);
+            animation: arrive 650ms ease-out both;
+        }
+
+        .sparkle {
+            position: absolute;
+            top: 1.35rem;
+            color: #d69a50;
+            font-size: 1.2rem;
+            pointer-events: none;
+        }
+
+        .sparkle.left {
+            left: 1.6rem;
+        }
+
+        .sparkle.right {
+            right: 1.6rem;
+        }
+
+        .eyebrow {
+            margin: 0 0 0.45rem;
+            color: var(--muted);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.19rem;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--accent);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(2.2rem, 8vw, 3.4rem);
+            font-weight: 700;
+        }
+
+        .hint {
+            margin: 0.55rem 0 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .cover-view,
+        .memory-view,
+        .cake-view {
+            transition: opacity 260ms ease, transform 260ms ease;
+        }
+
+        .cover-view[hidden],
+        .memory-view[hidden],
+        .cake-view[hidden] {
+            display: none;
+        }
+
+        .cover-view {
+            display: flex;
+            min-height: 500px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .envelope-wrap {
+            position: relative;
+            width: min(86%, 340px);
+            height: 255px;
+            margin: 1.6rem auto 1.25rem;
+            perspective: 900px;
+            animation: envelope-float 3.2s ease-in-out infinite;
+        }
+
+        .envelope-back {
+            position: absolute;
+            inset: 24px 0 0;
+            border-radius: 8px;
+            background: #d7e6e9;
+            box-shadow: 0 16px 32px rgba(37, 67, 84, 0.2);
+        }
+
+        .envelope-letter {
+            position: absolute;
+            z-index: 1;
+            top: 42px;
+            right: 7%;
+            left: 7%;
+            height: 175px;
+            padding: 1.5rem 0.7rem 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e5e9e9;
+            border-radius: 5px;
+            background: var(--paper);
+            box-shadow: 0 4px 12px rgba(37, 67, 84, 0.09);
+            transform: translateY(24px);
+            transition: transform 850ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .envelope-letter h1 {
+            margin: 0;
+            color: var(--accent);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(1.25rem, 5vw, 1.75rem);
+            line-height: 1.2;
+        }
+
+        .envelope-letter span {
+            margin-top: 0.6rem;
+            color: var(--muted);
+            font-size: 2rem;
+        }
+
+        .envelope-flap {
+            position: absolute;
+            z-index: 3;
+            top: 24px;
+            left: 0;
+            width: 100%;
+            height: calc(100% - 24px);
+            background: #367f88;
+            clip-path: polygon(0 0, 100% 0, 50% 50%);
+            transform: rotateX(0);
+            transform-origin: top center;
+            backface-visibility: hidden;
+            transition: transform 650ms ease, z-index 0ms 325ms;
+        }
+
+        .envelope-front {
+            position: absolute;
+            z-index: 2;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            top: 24px;
+            border-radius: 0 0 8px 8px;
+            background: #287c85;
+            clip-path: polygon(0 0, 50% 50%, 100% 0, 100% 100%, 0 100%);
+        }
+
+        .envelope-trigger {
+            position: absolute;
+            z-index: 4;
+            inset: 24px 0 0;
+            width: 100%;
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .envelope-trigger:focus-visible {
+            outline: 3px solid #d69a50;
+            outline-offset: 6px;
+            border-radius: 8px;
+        }
+
+        .envelope-seal {
+            position: absolute;
+            z-index: 5;
+            top: 54%;
+            left: 50%;
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            background: #d69a50;
+            color: white;
+            font-size: 1.15rem;
+            box-shadow: 0 4px 12px rgba(38, 59, 75, 0.2);
+            transform: translate(-50%, -50%);
+            transition: opacity 200ms ease, transform 250ms ease;
+            pointer-events: none;
+        }
+
+        .envelope-wrap:not(.is-opening):hover {
+            animation-play-state: paused;
+            transform: translateY(-5px) rotate(1deg);
+        }
+
+        .envelope-wrap:not(.is-opening):hover .envelope-seal {
+            transform: translate(-50%, -50%) scale(1.12) rotate(8deg);
+        }
+
+        .envelope-wrap.is-opening {
+            animation: none;
+        }
+
+        .envelope-wrap.is-opening .envelope-letter {
+            z-index: 4;
+            transform: translateY(-65px) rotate(-2deg);
+        }
+
+        .envelope-wrap.is-opening .envelope-flap {
+            z-index: 0;
+            transform: rotateX(180deg);
+        }
+
+        .envelope-wrap.is-opening .envelope-seal {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5);
+        }
+
+        .cover-hint {
+            max-width: 340px;
+            margin: 0.7rem auto 1.3rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .photo-stage {
+            position: relative;
+            width: min(100%, 340px);
+            height: 330px;
+            margin: 1.15rem auto 0.6rem;
+            display: grid;
+            place-items: center;
+            touch-action: pan-y;
+        }
+
+        .photo-shadow {
+            position: absolute;
+            width: min(72%, 235px);
+            height: 285px;
+            background: #dce8eb;
+            border: 8px solid white;
+            border-bottom-width: 48px;
+            border-radius: 3px;
+            box-shadow: 0 8px 24px rgba(87, 55, 74, 0.13);
+            pointer-events: none;
+            transition: transform 280ms ease;
+        }
+
+        .photo-shadow.back {
+            transform: translate(-17px, 4px) rotate(-8deg);
+        }
+
+        .photo-shadow.front {
+            transform: translate(17px, 3px) rotate(7deg);
+        }
+
+        .photo-button {
+            position: relative;
+            z-index: 1;
+            width: min(72%, 235px);
+            height: 285px;
+            padding: 8px 8px 0;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border: 0;
+            border-radius: 3px;
+            box-shadow: 0 10px 28px rgba(87, 55, 74, 0.19);
+            cursor: grab;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: pan-y;
+            transform: rotate(-1deg);
+            transition: transform 220ms ease, opacity 220ms ease;
+        }
+
+        .photo-button:active {
+            cursor: grabbing;
+        }
+
+        .photo-button:focus-visible,
+        .action-button:focus-visible,
+        .dot:focus-visible {
+            outline: 3px solid #d69a50;
+            outline-offset: 4px;
+        }
+
+        .photo-scene {
+            min-height: 0;
+            flex: 1;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            background: linear-gradient(145deg, #b9d1d8, #e1ecee 55%, #e8d2b7);
+        }
+
+        .photo-scene.scene-game {
+            background: radial-gradient(circle at 50% 40%, #f7f2e8, #a9c5cc 78%);
+        }
+
+        .photo-scene.scene-cake {
+            background: radial-gradient(circle at 50% 48%, #fff3cb, #c0d9dd 73%);
+        }
+
+        .photo-scene.scene-sunset {
+            background: linear-gradient(155deg, #bdd8df, #f0d7b2 56%, #7e9eaa);
+        }
+
+        .scene-art {
+            font-size: clamp(3.2rem, 13vw, 5rem);
+            letter-spacing: -0.75rem;
+            filter: drop-shadow(0 5px 5px rgba(45, 70, 84, 0.16));
+            transition: transform 220ms ease;
+        }
+
+        .photo-button:hover .scene-art {
+            transform: scale(1.07) rotate(-3deg);
+        }
+
+        .photo-caption {
+            min-height: 48px;
+            display: grid;
+            place-items: center;
+            color: #536978;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        .photo-count {
+            margin: 0.1rem 0 0;
+            color: var(--muted);
+            font-size: 0.78rem;
+        }
+
+        .memory-controls {
+            margin: 0.8rem 0 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .action-button {
+            min-height: 44px;
+            padding: 0.72rem 1.3rem;
+            border: 0;
+            border-radius: 999px;
+            background: var(--deep-accent);
+            color: white;
+            font: 700 0.95rem "Trebuchet MS", Arial, sans-serif;
+            cursor: pointer;
+            box-shadow: 0 5px 14px rgba(29, 94, 104, 0.2);
+            transition: transform 160ms ease, background 160ms ease;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            background: #174c55;
+        }
+
+        .arrow-button {
+            width: 42px;
+            height: 42px;
+            border: 1px solid #c5d7dc;
+            border-radius: 50%;
+            background: #f5fafb;
+            color: var(--deep-accent);
+            font-size: 1.15rem;
+            cursor: pointer;
+        }
+
+        .arrow-button:disabled {
+            opacity: 0.38;
+            cursor: default;
+        }
+
+        .dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.9rem;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            background: #d6e3e7;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background: var(--accent);
+            transform: scale(1.25);
+        }
+
+        .cake-view {
+            padding-top: 1.6rem;
+        }
+
+        .cake-view h2 {
+            margin: 0.5rem 0;
+            color: var(--accent);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(2rem, 7vw, 3rem);
+        }
+
+        .cake-icon {
+            display: block;
+            margin: 1rem 0;
+            font-size: clamp(5rem, 19vw, 8rem);
+            transform-origin: center;
+            transition: transform 250ms ease;
+        }
+
+        .cake-icon.blown {
+            transform: scale(1.16) rotate(-7deg);
+        }
+
+        .cake-message {
+            max-width: 430px;
+            margin: 0.8rem auto 1.35rem;
+            color: #526876;
+            font-size: 1.03rem;
+            line-height: 1.8;
+        }
+
+        @keyframes float-up {
+            from {
+                transform: translate3d(0, 0, 0) rotate(-8deg);
+            }
+            to {
+                transform: translate3d(18px, -120vh, 0) rotate(12deg);
+            }
+        }
+
+        @keyframes envelope-float {
+            0%, 100% {
+                transform: translateY(0) rotate(-1deg);
+            }
+            50% {
+                transform: translateY(-8px) rotate(1deg);
+            }
+        }
+
+        @keyframes arrive {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                min-height: 590px;
+                border-radius: 24px;
+            }
+
+            .photo-stage {
+                height: 310px;
+            }
+
+            .photo-button,
+            .photo-shadow {
+                height: 270px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .envelope-wrap.is-opening .envelope-letter {
+                transform: translateY(-45px);
+            }
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Welcome to My Website</h1>
-    </header>
-        <a href="https://google.com>"Visit Google</a>
+    <div class="floaties" aria-hidden="true">
+        <span class="floaty" style="--size:1.6rem;--duration:17s;--delay:-3s;left:8%">✦</span>
+        <span class="floaty" style="--size:1rem;--duration:20s;--delay:-12s;left:24%">✧</span>
+        <span class="floaty" style="--size:1.35rem;--duration:18s;--delay:-8s;left:87%">✦</span>
+        <span class="floaty" style="--size:1.1rem;--duration:22s;--delay:-15s;left:72%">✧</span>
+        <span class="floaty" style="--size:1.5rem;--duration:19s;--delay:-6s;left:52%">✦</span>
+    </div>
+
+    <main class="card">
+        <span class="sparkle left" aria-hidden="true">✧</span>
+        <span class="sparkle right" aria-hidden="true">✦</span>
+        <section class="cover-view" id="cover-view" aria-labelledby="cover-title">
+            <p class="eyebrow">Satu kejutan untuk kau</p>
+            <div class="envelope-wrap" id="envelope-wrap">
+                <div class="envelope-back" aria-hidden="true"></div>
+                <div class="envelope-letter">
+                    <h1 id="cover-title">Happy Birthday,<br>Nama Kawan!</h1>
+                    <span>🎮 &nbsp; 🏆 &nbsp; 🎂</span>
+                </div>
+                <div class="envelope-flap" aria-hidden="true"></div>
+                <div class="envelope-front" aria-hidden="true"></div>
+                <span class="envelope-seal" aria-hidden="true">★</span>
+                <button class="envelope-trigger" id="open-card-button" type="button" aria-label="Buka sampul kad hari jadi untuk Nama Kawan"></button>
+            </div>
+            <p class="cover-hint" id="cover-hint">Ada kejutan khas untuk kau. Tekan sampul untuk buka! 🎁</p>
+        </section>
+
+        <section class="memory-view" id="memory-view" aria-labelledby="memory-title" hidden>
+            <p class="eyebrow">Kad khas untuk kawan baik</p>
+            <h1 id="memory-title">Our Memories</h1>
+            <p class="hint">Tekan gambar atau tarik ke tepi untuk tengok kenangan! 📸</p>
+
+            <div class="photo-stage" id="photo-stage">
+                <div class="photo-shadow back" aria-hidden="true"></div>
+                <div class="photo-shadow front" aria-hidden="true"></div>
+                <button class="photo-button" id="photo-button" type="button" aria-label="Kenangan 1. Tekan atau tarik untuk gambar seterusnya.">
+                    <span class="photo-scene scene-game" id="photo-scene">
+                        <span class="scene-art" id="scene-art" aria-hidden="true">🎮⚽</span>
+                    </span>
+                    <span class="photo-caption" id="photo-caption">Kenangan paling comel</span>
+                </button>
+            </div>
+            <p class="photo-count" id="photo-count" aria-live="polite">1 / 3</p>
+
+            <div class="memory-controls">
+                <button class="arrow-button" id="previous-button" type="button" aria-label="Kenangan sebelumnya" disabled>‹</button>
+                <button class="action-button" id="cake-button" type="button">Time for Cake! 🎂</button>
+                <button class="arrow-button" id="next-button" type="button" aria-label="Kenangan seterusnya">›</button>
+            </div>
+            <div class="dots" id="dots" aria-label="Pilih kenangan"></div>
+        </section>
+
+        <section class="cake-view" id="cake-view" aria-labelledby="birthday-title" hidden>
+            <p class="eyebrow">Hari yang paling special</p>
+            <h2 id="birthday-title">Happy Birthday,<br><span id="friend-name">Nama Kawan</span>! 🎉</h2>
+            <span class="cake-icon" id="cake-icon" aria-hidden="true">🎂</span>
+            <p class="cake-message">
+                Semoga tahun baru dalam hidup kau penuh dengan bahagia, rezeki dan
+                semua benda baik yang kau impikan. Terima kasih sebab jadi kawan
+                yang paling steady! 🤝
+            </p>
+            <button class="action-button" id="candle-button" type="button">Tiup lilin! 🕯️</button>
+            <p class="hint" id="candle-message" aria-live="polite"></p>
+            <button class="arrow-button" id="memories-button" type="button" aria-label="Kembali ke kenangan">↶</button>
+        </section>
+
+    </main>
+
+    <script>
+        const memories = [
+            { art: "🎮⚽", caption: "Kenangan paling legend", scene: "scene-game" },
+            { art: "🏆🎂", caption: "Masa kita celebrate sama-sama", scene: "scene-cake" },
+            { art: "🌄🚗", caption: "Banyak lagi memori nak dibuat!", scene: "scene-sunset" }
+        ];
+
+        const photoButton = document.getElementById("photo-button");
+        const photoScene = document.getElementById("photo-scene");
+        const sceneArt = document.getElementById("scene-art");
+        const photoCaption = document.getElementById("photo-caption");
+        const photoCount = document.getElementById("photo-count");
+        const previousButton = document.getElementById("previous-button");
+        const nextButton = document.getElementById("next-button");
+        const dotsContainer = document.getElementById("dots");
+        const coverView = document.getElementById("cover-view");
+        const openCardButton = document.getElementById("open-card-button");
+        const envelopeWrap = document.getElementById("envelope-wrap");
+        const coverHint = document.getElementById("cover-hint");
+        const memoryView = document.getElementById("memory-view");
+        const cakeView = document.getElementById("cake-view");
+        const cakeButton = document.getElementById("cake-button");
+        const memoriesButton = document.getElementById("memories-button");
+        const cakeIcon = document.getElementById("cake-icon");
+        const candleButton = document.getElementById("candle-button");
+        const candleMessage = document.getElementById("candle-message");
+        let currentMemory = 0;
+        let pointerStartX = null;
+        let suppressClick = false;
+
+        const dots = memories.map((memory, index) => {
+            const dot = document.createElement("button");
+            dot.className = "dot";
+            dot.type = "button";
+            dot.setAttribute("aria-label", `Pergi ke kenangan ${index + 1}`);
+            dot.addEventListener("click", () => showMemory(index));
+            dotsContainer.append(dot);
+            return dot;
+        });
+
+        function showMemory(index) {
+            currentMemory = (index + memories.length) % memories.length;
+            const memory = memories[currentMemory];
+
+            sceneArt.textContent = memory.art;
+            photoCaption.textContent = memory.caption;
+            photoScene.className = `photo-scene ${memory.scene}`;
+            photoCount.textContent = `${currentMemory + 1} / ${memories.length}`;
+            photoButton.setAttribute(
+                "aria-label",
+                `Kenangan ${currentMemory + 1}: ${memory.caption}. Tekan atau tarik untuk tukar gambar.`
+            );
+            previousButton.disabled = currentMemory === 0;
+            nextButton.disabled = currentMemory === memories.length - 1;
+
+            dots.forEach((dot, dotIndex) => {
+                const isActive = dotIndex === currentMemory;
+                dot.classList.toggle("active", isActive);
+                dot.setAttribute("aria-current", isActive ? "step" : "false");
+            });
+        }
+
+        function showBirthday() {
+            memoryView.hidden = true;
+            cakeView.hidden = false;
+        }
+
+        function openCard() {
+            if (envelopeWrap.classList.contains("is-opening")) {
+                return;
+            }
+
+            envelopeWrap.classList.add("is-opening");
+            openCardButton.disabled = true;
+            coverHint.textContent = "Kad sedang dibuka... ✨";
+
+            const openingDelay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 850;
+            window.setTimeout(() => {
+                coverView.hidden = true;
+                memoryView.hidden = false;
+            }, openingDelay);
+        }
+
+        function showMemories() {
+            cakeView.hidden = true;
+            memoryView.hidden = false;
+        }
+
+        previousButton.addEventListener("click", () => showMemory(currentMemory - 1));
+        nextButton.addEventListener("click", () => showMemory(currentMemory + 1));
+        photoButton.addEventListener("click", () => {
+            if (suppressClick) {
+                suppressClick = false;
+                return;
+            }
+            showMemory(currentMemory + 1);
+        });
+
+        photoButton.addEventListener("pointerdown", (event) => {
+            pointerStartX = event.clientX;
+            photoButton.setPointerCapture(event.pointerId);
+        });
+
+        photoButton.addEventListener("pointerup", (event) => {
+            if (pointerStartX === null) {
+                return;
+            }
+
+            const distance = event.clientX - pointerStartX;
+            pointerStartX = null;
+
+            if (Math.abs(distance) > 45) {
+                suppressClick = true;
+                showMemory(currentMemory + (distance < 0 ? 1 : -1));
+                window.setTimeout(() => {
+                    suppressClick = false;
+                }, 0);
+            }
+        });
+
+        photoButton.addEventListener("pointercancel", () => {
+            pointerStartX = null;
+        });
+
+        cakeButton.addEventListener("click", showBirthday);
+        memoriesButton.addEventListener("click", showMemories);
+        openCardButton.addEventListener("click", openCard);
+
+        candleButton.addEventListener("click", () => {
+            cakeIcon.classList.add("blown");
+            candleMessage.textContent = "Mantap! Semoga semua wish kau jadi kenyataan! ✨";
+            candleButton.disabled = true;
+            candleButton.textContent = "Wish granted! 💫";
+        });
+
+        showMemory(0);
+    </script>
 </body>
 </html>
